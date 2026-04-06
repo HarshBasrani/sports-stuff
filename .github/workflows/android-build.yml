@@ -36,6 +36,7 @@ jobs:
 
       - name: Sync Capacitor
         run: |
+          npx cap add android || echo "Android platform already exists"
           npx cap sync android
           ls -R android/app/src/main/assets/public || echo "Assets not synced correctly"
 
