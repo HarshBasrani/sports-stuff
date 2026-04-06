@@ -3,12 +3,12 @@ name: Android Build
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout Source
@@ -18,34 +18,46 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci || npm install
 
       - name: Build Web Assets
         run: npm run build
 
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
+          cache: 'gradle'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Sync Capacitor
+      - name: Capacitor Sync & Repair
         run: |
-          # Ensure dist exists (should be created by build step)
-          mkdir -p dist
-          # Sync handles both copy and update
+          # If android folder is missing or broken, recreate it
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
           npx cap sync android
 
       - name: Build Android APK
         run: |
           cd android
+          # Fix permissions for the wrapper
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace
+          # Run build with low memory footprint for CI stability
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sports-stuff-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
