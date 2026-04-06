@@ -35,13 +35,15 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: |
+          npx cap sync android
+          ls -R android/app/src/main/assets/public || echo "Assets not synced correctly"
 
       - name: Build Android APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace --info
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
