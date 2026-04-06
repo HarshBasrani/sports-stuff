@@ -36,17 +36,16 @@ jobs:
 
       - name: Sync Capacitor
         run: |
-          # Clean up any existing android folder to ensure a fresh start
-          rm -rf android
-          npx cap add android
+          # Ensure dist exists (should be created by build step)
+          mkdir -p dist
+          # Sync handles both copy and update
           npx cap sync android
-          ls -R android/app/src/main/assets/public || echo "Assets not synced correctly"
 
       - name: Build Android APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug --stacktrace --info
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
