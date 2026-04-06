@@ -43,6 +43,7 @@ jobs:
             npx cap add android
           fi
           npx cap sync android
+          ls -la android/
 
       - name: Build Android APK
         run: |
@@ -58,9 +59,3 @@ jobs:
           name: sports-stuff-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
-
-      - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
